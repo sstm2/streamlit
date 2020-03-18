@@ -2400,7 +2400,9 @@ class DeltaGenerator(object):
 
         Returns
         -------
-        BytesIO or StringIO or or list of BytesIO/StringIO or None
+        Dict or None
+            - name key contains the uploaded file name
+            - data key contains a BytesIO or StringIO object
             If no file has been uploaded, returns None. Otherwise, returns
             the data for the uploaded file(s):
             - If the file is in a well-known textual format (or if the encoding
@@ -2415,7 +2417,7 @@ class DeltaGenerator(object):
         --------
         >>> uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
         >>> if uploaded_file is not None:
-        ...     data = pd.read_csv(uploaded_file)
+        ...     data = pd.read_csv(uploaded_file.data)
         ...     st.write(data)
 
         """
@@ -2444,8 +2446,10 @@ class DeltaGenerator(object):
         if files is None:
             return NoValue
 
+        file_names = [file.name for file in files]
         file_datas = [get_encoded_file_data(file.data, encoding) for file in files]
-        return file_datas if accept_multiple_files else file_datas[0]
+        file_dicts = [dict(name=f[0], data=f[1]) for f in zip(file_names, file_datas)]
+        return file_dicts if accept_multiple_files else file_dicts[0]
 
     @_with_element
     def beta_color_picker(self, element, label, value=None, key=None):
